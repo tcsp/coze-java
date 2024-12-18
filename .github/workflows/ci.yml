@@ -22,39 +22,55 @@ jobs:
           - { java-version: "11", os: "macos-latest", os-label: "macOS" }
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      
       - name: Set up JDK ${{ matrix.java-version }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-         java-version: ${{ matrix.java-version }}
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+          cache: 'maven'
 
       - name: Code style check
+        run: mvn spotless:check
+
+      - name: Build and Test with Coverage
         run: |
-          ./gradlew spotlessCheck
+          mvn -pl api clean test-compile
+          mvn -pl api test jacoco:report
 
-      - name: Build and Test
-        run: ./gradlew build test
-
+      - name: Debug Test Results (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          echo "Test Results:"
+          find . -name "TEST-*.xml" -exec cat {} \;
+          echo "JaCoCo Report Location:"
+          ls -la api/target/site/jacoco/
+          
+      - name: Debug Test Results (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "Test Results:"
+          Get-ChildItem -Recurse -Filter "TEST-*.xml" | Get-Content
+          echo "JaCoCo Report Location:"
+          Get-ChildItem -Path "api\target\site\jacoco" -Force
+          
       - name: Generate JaCoCo Report
-        run: ./gradlew jacocoTestReport
+        run: mvn -pl api jacoco:report
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./build/reports/jacoco/test/jacocoTestReport.xml
+          files: ./api/target/site/jacoco/jacoco.xml
           flags: unittests
           fail_ci_if_error: true
+          verbose: true
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v3
+      - name: Cache Maven packages
+        uses: actions/cache@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-m2-
