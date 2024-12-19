@@ -38,12 +38,12 @@
 
     <parent>
         <groupId>com.coze</groupId>
-        <artifactId>coze-sdk</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <artifactId>coze</artifactId>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>coze-api</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
 
     <scm>
         <connection>scm:git:git://github.com/coze-dev/coze-java.git</connection>
