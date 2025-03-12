@@ -1,7 +1,10 @@
 package com.coze.openapi.client.bots;
 
+import com.coze.openapi.client.bots.model.BotModelInfoConfig;
 import com.coze.openapi.client.bots.model.BotOnboardingInfo;
+import com.coze.openapi.client.bots.model.BotPluginIdList;
 import com.coze.openapi.client.bots.model.BotPromptInfo;
+import com.coze.openapi.client.bots.model.BotWorkflowIdList;
 import com.coze.openapi.client.common.BaseReq;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -37,4 +40,16 @@ public class CreateBotReq extends BaseReq {
 
   @JsonProperty("onboarding_info")
   BotOnboardingInfo onboardingInfo;
+
+  /** 智能体的插件配置 */
+  @JsonProperty("plugin_id_list")
+  private BotPluginIdList pluginIdList;
+
+  /** 智能体的工作流配置 */
+  @JsonProperty("workflow_id_list")
+  private BotWorkflowIdList workflowIdList;
+
+  /** 智能体的模型配置 */
+  @JsonProperty("model_info_config")
+  private BotModelInfoConfig modelInfoConfig;
 }
