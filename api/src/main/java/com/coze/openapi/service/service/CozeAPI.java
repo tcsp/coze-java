@@ -13,11 +13,14 @@ import com.coze.openapi.service.config.Consts;
 import com.coze.openapi.service.service.audio.AudioService;
 import com.coze.openapi.service.service.bots.BotService;
 import com.coze.openapi.service.service.chat.ChatService;
+import com.coze.openapi.service.service.commerce.CommerceService;
 import com.coze.openapi.service.service.common.CozeLoggerFactory;
+import com.coze.openapi.service.service.connector.ConnectorService;
 import com.coze.openapi.service.service.conversation.ConversationService;
 import com.coze.openapi.service.service.dataset.DatasetService;
 import com.coze.openapi.service.service.file.FileService;
 import com.coze.openapi.service.service.template.TemplateService;
+import com.coze.openapi.service.service.variable.VariablesService;
 import com.coze.openapi.service.service.websocket.WebsocketsClient;
 import com.coze.openapi.service.service.workflow.WorkflowService;
 import com.coze.openapi.service.service.workspace.WorkspaceService;
@@ -47,6 +50,9 @@ public class CozeAPI {
   private final AudioService audioAPI;
   private final TemplateService templateAPI;
   private final WebsocketsClient websocket;
+  private final CommerceService commerceAPI;
+  private final VariablesService variablesAPI;
+  private final ConnectorService connectorAPI;
 
   private CozeAPI(
       String baseURL,
@@ -61,7 +67,10 @@ public class CozeAPI {
       ChatService chatAPI,
       AudioService audioAPI,
       TemplateService templateAPI,
-      WebsocketsClient websocket) {
+      WebsocketsClient websocket,
+      CommerceService commerceAPI,
+      VariablesService variablesAPI,
+      ConnectorService connectorAPI) {
     this.baseURL = baseURL;
     this.executorService = executorService;
     this.auth = auth;
@@ -75,6 +84,9 @@ public class CozeAPI {
     this.audioAPI = audioAPI;
     this.templateAPI = templateAPI;
     this.websocket = websocket;
+    this.commerceAPI = commerceAPI;
+    this.variablesAPI = variablesAPI;
+    this.connectorAPI = connectorAPI;
   }
 
   public WorkspaceService workspaces() {
@@ -115,6 +127,18 @@ public class CozeAPI {
 
   public WebsocketsClient websockets() {
     return this.websocket;
+  }
+
+  public CommerceService commerces() {
+    return this.commerceAPI;
+  }
+
+  public VariablesService variables() {
+    return this.variablesAPI;
+  }
+
+  public ConnectorService connectors() {
+    return this.connectorAPI;
   }
 
   public void shutdownExecutor() {
@@ -207,6 +231,12 @@ public class CozeAPI {
       WebsocketsClient websocket =
           new WebsocketsClient(
               this.client, Strings.replace(this.baseURL, "https://api", "wss://ws"));
+      CommerceService commerceAPI =
+          new CommerceService(
+              retrofit.create(CommerceBenefitLimitationAPI.class),
+              retrofit.create(CommerceBenefitBillAPI.class));
+      VariablesService variablesAPI = new VariablesService(retrofit.create(VariablesAPI.class));
+      ConnectorService connectorService = new ConnectorService(retrofit.create(ConnectorAPI.class));
       return new CozeAPI(
           this.baseURL,
           executorService,
@@ -220,7 +250,10 @@ public class CozeAPI {
           chatAPI,
           audioAPI,
           templateAPI,
-          websocket);
+          websocket,
+          commerceAPI,
+          variablesAPI,
+          connectorService);
     }
 
     // 确保加上了 Auth 拦截器
@@ -257,7 +290,7 @@ public class CozeAPI {
 
     private OkHttpClient defaultClient(Duration readTimeout, Duration connectTimeout) {
       return new OkHttpClient.Builder()
-          .connectionPool(new ConnectionPool(5, 1, TimeUnit.SECONDS))
+          .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
           .readTimeout(readTimeout.toMillis(), TimeUnit.MILLISECONDS)
           .connectTimeout(connectTimeout.toMillis(), TimeUnit.MILLISECONDS)
           .addInterceptor(new AuthenticationInterceptor(this.auth)) // 添加拦截器，在请求头中增加 token

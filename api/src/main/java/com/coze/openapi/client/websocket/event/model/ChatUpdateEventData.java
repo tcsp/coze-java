@@ -30,4 +30,7 @@ public class ChatUpdateEventData {
 
   @JsonProperty("prologue_content")
   private String prologueContent;
+
+  @JsonProperty("asr_config")
+  private AsrConfig asrConfig;
 }
