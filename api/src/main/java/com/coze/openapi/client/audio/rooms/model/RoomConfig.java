@@ -18,4 +18,10 @@ public class RoomConfig {
   public static RoomConfig of(AudioCodec codec) {
     return RoomConfig.builder().audioConfig(RoomAudioConfig.builder().codec(codec).build()).build();
   }
+
+  @JsonProperty("room_mode")
+  private String roomMode = "";
+
+  @JsonProperty("translate_config")
+  private TranslateConfig translateConfig;
 }
