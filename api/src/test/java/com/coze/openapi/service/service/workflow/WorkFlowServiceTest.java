@@ -6,9 +6,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.coze.openapi.client.workflows.WorkflowListReq;
+import com.coze.openapi.client.workflows.WorkflowListResp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -47,6 +50,52 @@ public class WorkFlowServiceTest {
     MockitoAnnotations.openMocks(this);
     workflowService =
         new WorkflowService(workflowAPI, workflowRunAPI, workflowRunHistoryAPI, workflowChatAPI);
+  }
+
+  @Test
+  void testList() throws Exception {
+    // 准备测试数据
+    String workSpaceId = "test_space_id";
+    String workflowID = "test_workflow_id";
+    Integer pageNum = 1;
+
+    WorkflowListReq req =
+        WorkflowListReq.builder()
+            .workspaceId(workSpaceId)
+            .pageNum(pageNum)
+            .build();
+
+    WorkflowDetail detail =
+        WorkflowDetail.builder()
+            .workflowId(workflowID)
+            .workflowName("测试工作流")
+            .description("这是一个用于单元测试的工作流")
+            .createdAt("2024-01-01T00:00:00Z")
+            .updatedAt("2024-01-02T00:00:00Z")
+            .build();
+
+    WorkflowListResp data =
+        WorkflowListResp.builder().items(Arrays.asList(detail)).hasMore(true).build();
+
+    BaseResponse<WorkflowListResp> baseResponse =
+        BaseResponse.<WorkflowListResp>builder()
+            .code(0)
+            .msg("success")
+            .logID(Utils.TEST_LOG_ID)
+            .data(data)
+            .build();
+
+    // 创建 mock Call 对象
+    Call<BaseResponse<WorkflowListResp>> call = mock(Call.class);
+    when(workflowAPI.list(any(), any(), any(), any(), any(), any(), any())).thenReturn(call);
+    when(call.execute()).thenReturn(Response.success(baseResponse, Utils.getCommonHeader()));
+
+    // 执行测试
+    BaseResponse<WorkflowListResp> result = workflowService.list(req);
+
+    // 验证结果
+    assertNotNull(result);
+    assertEquals(workflowID, result.getData().getItems().get(0).getWorkflowId());
   }
 
   @Test
