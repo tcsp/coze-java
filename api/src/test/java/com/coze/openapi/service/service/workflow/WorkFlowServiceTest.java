@@ -10,8 +10,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.coze.openapi.client.workflows.WorkflowListReq;
-import com.coze.openapi.client.workflows.WorkflowListResp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -24,6 +22,8 @@ import com.coze.openapi.api.WorkflowRunHistoryAPI;
 import com.coze.openapi.client.common.BaseResponse;
 import com.coze.openapi.client.workflows.WorkflowGetReq;
 import com.coze.openapi.client.workflows.WorkflowGetResp;
+import com.coze.openapi.client.workflows.WorkflowListReq;
+import com.coze.openapi.client.workflows.WorkflowListResp;
 import com.coze.openapi.client.workflows.model.WorkflowDetail;
 import com.coze.openapi.client.workflows.model.WorkflowInput;
 import com.coze.openapi.client.workflows.model.WorkflowOutput;
@@ -60,10 +60,7 @@ public class WorkFlowServiceTest {
     Integer pageNum = 1;
 
     WorkflowListReq req =
-        WorkflowListReq.builder()
-            .workspaceId(workSpaceId)
-            .pageNum(pageNum)
-            .build();
+        WorkflowListReq.builder().workspaceId(workSpaceId).pageNum(pageNum).build();
 
     WorkflowDetail detail =
         WorkflowDetail.builder()
